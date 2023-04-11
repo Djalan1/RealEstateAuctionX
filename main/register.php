@@ -1,146 +1,243 @@
 <?php
-include './header.php';
-if (isset($_SESSION['isLogged']) && $_SESSION['isLogged'] == true) {
-    header('Location: ./index.php');
-    exit();
-}
-require_once './src/Database.php';
-
-$db = Database::getInstance();
-$err = '';
-$msg = '';
-if (isset($_POST['submit'])) {
-    $firstName = $_POST['firstName'];
-    $middleName = $_POST['middleName'];
-    $lastName = $_POST['lastName'];
-    $address = $_POST['address'];
-    $pin = $_POST['pin'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
-    $altPhone = $_POST['alt_phone'];
-    $password = $_POST['password'];
-    $confirmPassword = $_POST['confirmPassword'];
-
-    if (strlen($firstName) < 1) {
-        $err = "Please enter first name";
-    } else if (strlen($lastName) < 1) {
-        $err = "Please enter last name";
-    } else if (strlen($address) < 1) {
-        $err = "Please enter address";
-    } else if (strlen($pin) < 1) {
-        $err = "Please enter pin";
-    } else if (strlen($pin) != 6) {
-        $err = "Please enter valid pin";
-    } else if (!ctype_digit($pin)) {
-        $err = "Please enter valid pin";
-    } else if (strlen($email) < 1) {
-        $err = "Please enter email";
-    } else if (strlen($phone) < 1) {
-        $err = "Please enter phone";
-    } else if (!preg_match('/^[0-9]{10}+$/', $phone)) {
-        $err = "Phone number must be 10 digit";
-    } else if (!ctype_digit($phone)) {
-        $err = "Please enter valid phone";
-    } else if (strlen($password) < 1) {
-        $err = "Please choose password";
-    } else {
-        $fullName = $firstName . ' ' . $middleName . ' ' . $lastName;
-        if ($password != $confirmPassword) {
-            $err = "Password doesnot match";
-        } else {
-            $hash_pass = password_hash($password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (email, password, last_password) VALUES ('$email', '$hash_pass', '$hash_pass');";
-
-            $sql .= "INSERT INTO personal_details (name, street, phone, alt_phone, zip_code, email)
-                    VALUES ('$fullName', '$address', '$phone', '$altPhone', '$pin', '$email')";
-            if ($db->multi_query($sql) === true) {
-
-                $msg = 'Registration has been successfull, Please login';
-            } else {
-                $err = 'Registration failed please try later';
-            }
-        }
-    }
+include("header.php");
+if(isset($_POST['submit']))
+{   
+	$sql ="INSERT INTO customer(customer_name,email_id,password,mobile_no,status) values('$_POST[customer_name]','$_POST[email_id]','$_POST[password]','$_POST[mobile_no]','Active')";
+	$qsql = mysqli_query($con,$sql);
+	if(mysqli_affected_rows($con) == 1)
+	{
+		echo "<script>alert('Customer Registration done successfully..');</script>";
+		echo "<script>window.location='customerlogin.php';</script>";
+	}
+	else
+	{
+		echo "<script>alert('Failed to Register..');</script>";
+		echo mysqli_error($con);
+	}
 }
 ?>
-<div class="container-fluid">
-    <div class="row no-gutter">
-        <div class="d-none d-md-flex col-md-4 col-lg-6 bg-image">
-        </div>
-        <div class="col-md-8 col-lg-6" style="background:whitesmoke">
-            <div class="login align-items-center">
-                <div class="col-md-12 col-lg-12 mx-auto">
-                    <div id="msg" class="mt-3">
-                        <?php if(strlen($msg) > 1):?>
-                        <div class="alert alert-success text-center"><strong>Success! </strong><?php echo $msg?></div>
-                        <?php endif?>
-                        <?php if(strlen($err) > 1):?>
-                        <div class="alert alert-danger text-center"><strong>Failed! </strong><?php echo $err?></div>
-                        <?php endif?></div>
-                    <h3 class="pt-5 text-center font-weight-bold">Signup</h3>
-                    <form class="mt-4" method="POST" action="<?php echo $_SERVER['PHP_SELF']?>" onsubmit="return validateRegisterFrom()">
-                        <div class="form-row">
-                            <div class="form-group col-md-4">
-                                <label class="font-weight-bold">First Name</label>
-                                <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name">
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label class="font-weight-bold">Middle Name</label>
-                                <input type="text" id="middleName" name="middleName" class="form-control" placeholder="Enter middle name">
-                            </div>
-                            <div class="form-group col-md-4">
-                                <label class="font-weight-bold">Last Name</label>
-                                <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name">
-                            </div>
+            <!-- breadcrumb-area start -->
+            <div class="breadcrumb-area bg-gray">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <ul class="breadcrumb-list">
+                                <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+                                <li class="breadcrumb-item active">Register </li>
+                            </ul>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-12">
-                                <label class="font-weight-bold">Address</label>
-                                <textarea name="address" id="address" class="form-control" id="inputEmail4" placeholder="Enter address"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Zipcode</label>
-                                <input type="text" id="pin" name="pin" class="form-control" placeholder="Enter pincode">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Email</label>
-                                <input type="email" id="email" name="email" class="form-control" placeholder="Enter email">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Phone</label>
-                                <input type="text" id="phone" name="phone" class="form-control" placeholder="Enter phone no.">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Alt. Phone</label>
-                                <input type="text" name="alt_phone" class="form-control" placeholder="Enter alternative no.">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Password</label>
-                                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password.">
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label class="font-weight-bold">Confirm password</label>
-                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm password">
-                            </div>
-                        </div>
-                        <button class="btn btn-lg btn-primary btn-block btn-login my-2" type="submit" name="submit">Sign up</button>
-                    </form>
-                    <div class="text-center">
-                        <a href="./login.php">Already registered?</a></div>
-                        <div class="clearfix" style="height:65px"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
+            <!-- breadcrumb-area end -->
+            
+            <!-- content-wraper start -->
+            <div class="content-wraper mt-50">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-3 col-sm-3"></div>
+                        <div class="col-lg-6 col-md-6 col-sm-6">
+                            <div class="customer-login-register">
+                                <center><h3>Customer Registration Panel</h3></center>
+                                <div class="login-Register-info">
+<form action="" method="post"> 
+	<p class="coupon-input form-row-first">
+		<label>Name<span class="required">*</span> <span class="errormsg"  id="errcustomer_name"></span></label>
+		<input type="text" name="customer_name" id="customer_name">
+	</p>
+	<p class="coupon-input form-row-first">
+		<label>Email <span class="required">*</span> <span class="errormsg"  id="erremail_id"></span></label>
+		<input type="text" name="email_id" id="email_id">
+	</p>
+	<p class="coupon-input form-row-first">
+		<label>Mobile No. <span class="required">*</span>  <span class="errormsg"  id="errmobile_no"></span></label>
+		<input type="text" name="mobile_no" id="mobile_no" value="+91" onkeypress="return isNumber(event)" >
+	</p>
+	<p class="coupon-input form-row-last">
+		<label>Password <span class="required">*</span> <span class="errormsg"  id="errpassword"></span></label>
+		<input type="password" name="password" id="password" >
+	</p>
+	<p class="coupon-input form-row-last">
+		<label>Confirm password <span class="required">*</span> <span class="errormsg"  id="errcpassword"></span></label>
+		<input type="password" name="cpassword" id="cpassword">
+	</p>
+   <div class="clear"></div>
+	<p>
+		<button value="Login" name="btnsubmit" id="btnsubmit" class="button-login" type="button" onclick="return validatecustomer()" >Register</button>
+		
+	</p>
+	
+<div id="otpModal" class="modal fade" role="dialog">
+  <div class="modal-dialog" style="max-width: 50%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Verify OTP</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+	<p class="coupon-input form-row-first">
+		<label><b>We have sent OTP to following Email ID.</b></label>
+		<input type="text" name="emailids" id="emailids" readonly>
+		<input type="hidden" name="otpnumber" id="otpnumber" readonly>
+	</p>
+		<p class="coupon-input form-row-first">
+		<label>Enter OTP</label>
+		<input type="text" name="enteredotp" id="enteredotp">
+	</p>
+      </div>
+      <div class="modal-footer">
+			<button value="Login" name="submit" id="submit" class="button-login" type="submit" onclick="return validateotp()">Complete Registration</button>
+      </div>
     </div>
+  </div>
 </div>
 
-<?php
-	include './footer.php';
-?>
+</form>
+<script>
+function validateotp()
+{
+	if(document.getElementById("otpnumber").value == document.getElementById("enteredotp").value)
+	{
+		return true;
+	}
+	else
+	{
+		alert("You have entered invalid OTP..");
+		return false;
+	}
+}
+</script>
+                                </div>
+                            </div>
+                        </div>
+						<div class="col-lg-3 col-md-3 col-sm-3"></div>
+					</div>
+                </div>
+            </div>
+            <!-- content-wraper end -->
+            
+            <!-- footer-area start -->
+            <?php
+			include("footer.php");
+			?>
+			
+			
+<script>
+function validatecustomer()
+{
+	var numericExp = /^[0-9]+$/;
+	var alphaExp = /^[a-zA-Z]+$/;
+	var alphaSpaceExp = /^[a-zA-Z\s]+$/;
+	var alphaNumericExp = /^[0-9a-zA-Z]+$/;
+	var emailExp = /^[\w\-\.\+]+\@[a-zA-Z0-9\.\-]+\.[a-zA-z0-9]{2,4}$/;
+	var regexpass = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/
+	$('.errormsg').html('');
+	var errchk = "False";
+
+	if(document.getElementById("customer_name").value.length > 25)
+	{
+		document.getElementById("errcustomer_name").innerHTML="Customer name not contain less than 15 characters...";
+		errchk = "True";
+	}
+	if(!document.getElementById("customer_name").value.match(alphaSpaceExp))
+	{
+		document.getElementById("errcustomer_name").innerHTML = "Kindly enter valid Customer name..";
+		errchk = "True";
+	}
+	if(document.getElementById("customer_name").value == "")
+	{
+		document.getElementById("errcustomer_name").innerHTML="Customer name should not be empty...";
+		errchk = "True";
+	}
+	if(!document.getElementById("email_id").value.match(emailExp))
+	{
+		document.getElementById("erremail_id").innerHTML = "Entered Email ID is not valid....";
+		errchk = "True";
+	}
+	if(document.getElementById("email_id").value == "")
+	{
+		document.getElementById("erremail_id").innerHTML="Kindly enter Email ID.";
+		errchk = "True";
+	}	 
+		
+	if(document.getElementById("password").value.length < 8)
+	{
+		document.getElementById("errpassword").innerHTML ="Password should contain more than 8 characters...";	
+		errchk = "True";		
+	}	
+	if(document.getElementById("password").value.length > 16)
+	{
+		document.getElementById("errpassword").innerHTML ="Password should contain less than 16 characters...";	
+		errchk = "True";		
+	}
+	/*
+	if(!document.getElementById("password").value.match(regexpass))
+	{
+		document.getElementById("errpassword").innerHTML ="New password should contain at least one digit, one lower case, one upper case and 8 characters....";
+		errchk = "True";
+	}
+	*/
+	if(document.getElementById("password").value == "")
+	{
+		document.getElementById("errpassword").innerHTML ="New password should not be empty....";	
+		errchk = "True";	
+	}	
+	if(document.getElementById("cpassword").value != document.getElementById("password").value )
+	{
+		document.getElementById("errcpassword").innerHTML ="Confirm password Must match with new password..";	
+		errchk = "True";		
+	}
+	if(document.getElementById("cpassword").value == "")
+	{
+		document.getElementById("errcpassword").innerHTML ="Confirm Password should not be empty....";	
+		i=1;		
+	}
+	if(document.getElementById("mobile_no").value.length != 13)
+	{
+		document.getElementById("errmobile_no").innerHTML="Mobile Number should contain 10 digits..";
+		errchk = "True";
+	}
+	if(document.getElementById("mobile_no").value == "")
+	{
+		document.getElementById("errmobile_no").innerHTML="Mobile number should not be empty..";
+		errchk = "True";
+	}	
+	if(errchk == "True")
+	{
+		return false;
+	}
+	else
+	{
+		$('#btnsubmit').attr('disabled',true);
+		//return false;
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) 
+			{
+				document.getElementById("otpnumber").value = this.responseText;
+				document.getElementById("emailids").value = document.getElementById("email_id").value;
+				$('#otpModal').modal('show');
+			}
+		};
+		xmlhttp.open("GET","sendotp.php?emailid="+document.getElementById("email_id").value+"&cstname="+document.getElementById("customer_name").value,true);
+		xmlhttp.send();
+	}
+}
+$("#mobile_no").keydown(function(e) {
+    var oldvalue=$(this).val();
+		var field=this;
+		setTimeout(function () {
+			if(field.value.indexOf('+91') !== 0) {
+				$(field).val(oldvalue);
+			} 
+		}, 1);
+});
+function isNumber(evt) {
+    evt = (evt) ? evt : window.event;
+    var charCode = (evt.which) ? evt.which : evt.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+        return false;
+    }
+    return true;
+}
+</script>

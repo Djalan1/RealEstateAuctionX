@@ -1,85 +1,115 @@
 <?php
-	include './header.php';
-	if(isset($_SESSION['isLogged']) && $_SESSION['isLogged'] == true){
-		header('Location: ./index.php');
-		exit();
-	}
-	require_once './src/Database.php';
-	require_once './src/Session.php';
-	$db = Database::getInstance();
-
-	$err = '';
-	$msg = '';
-	if(isset($_POST['submit'])){
-		$email = $_POST['email'];
-		$password = $_POST['password'];
-
-		if(strlen($email) < 1){
-			$err = "Please enter email";
-		} else if(! filter_var($email, FILTER_VALIDATE_EMAIL)){
-			$err = "Please enter a valid email";
-		} else if(strlen($password) < 1){
-			$err = "Please enter password";
-		} else {
-			$sql = "SELECT * FROM users WHERE email = '$email'";
-			$res = $db->query($sql);
-
-			if($res->num_rows > 0){
-				$user = $res->fetch_object();
-				if(password_verify($password, $user->password)){
-					Session::set('isLogged', true);
-					Session::set('user', $user);
-					header('Location: ./index.php');
-					exit();
-				} else {
-					$err = "Wrong username or password";
-				}
-			} else{
-				$err = "User not found";
-			}
-		}		
-	}
+include("header.php");
+if(isset($_SESSION['customer_id']))
+{
+	echo "<script>window.location='index.php';</script>";
+}
 ?>
-<div class="container-fluid">
-	<div class="row no-gutter">
-		<div class="d-none d-md-flex col-md-4 col-lg-6 bg-image">
-		</div>
-		<div class="col-md-8 col-lg-6" style="background:whitesmoke">
-			<div class="login align-items-center d-flex">
-				<div class="col-md-9 col-lg-8 mx-auto">
-					<div id="msg">
-						<?php if(strlen($err) > 1):?>
-						<div class="alert alert-danger mt-3 text-center"><strong>Failed! </strong><?php echo $err?></div>
-						<?php endif?>
-					</div>
-					<h3 class="mb-4 text-center font-weight-bold">Signin</h3>
-					<form method="POST" action="<?php echo $_SERVER['PHP_SELF']?>" onsubmit="return validateLoginForm()">
-						<div class="form-group">
-							<label class="font-weight-bold">Email address</label>
-							<input type="email" id="email" name="email" class="form-control" placeholder="Enter email">
-
-						</div>
-						<div class="form-group">
-							<label class="font-weight-bold">Password</label>
-							<input type="password" id="password" name="password" class="form-control" placeholder="Password">
-						</div>
-						<div>
-							<div class="text-center float-right">
-								<a class="small" href="./forgotPass.php">Forgot password?</a></div>
-						</div>
-
-						<button class="btn btn-lg btn-primary btn-block btn-login my-2" name="submit" type="submit">Sign
-							In</button>
-
+<!-- banner -->
+	<div class="banner">
+		<?php
+		include("sidebar.php");
+		?>
+		<div class="w3l_banner_nav_right">
+		<!-- login -->
+		<div class="w3_login">
+			<h3>Sign In</h3>
+			<div class="w3_login_module">
+				<div class="module form-module">
+				  <div><i class="fa"></i>
+					<div class="tooltip">Click Me</div>
+				  </div>
+				  <div class="form">
+					<h2>Login to your account</h2>
+					<form action="" method="post" onsubmit="return validateform()">
+					<span id='idemailid' style="color:red;"></span>
+					  <input type="text" name="emailid" id="emailid" placeholder="Email ID" >
+					  
+					  <span id='idpassword' style="color:red;"></span>
+					  <input type="password" name="password" id="password" placeholder="Password">
+					  
+					  <input type="submit" name="btnlogin" value="Login">
 					</form>
-					<div class="text-center">
-						<a href="./register.php">Not registered yet?</a></div>
+				  </div>
+				  <div class="form">
+					<h2>Create an account</h2>
+					<form action="#" method="post">
+					  <input type="text" name="Username" placeholder="Username" required=" ">
+					  <input type="password" name="Password" placeholder="Password" required=" ">
+					  <input type="email" name="Email" placeholder="Email Address" required=" ">
+					  <input type="text" name="Phone" placeholder="Phone Number" required=" ">
+					  <input type="submit" value="Register">
+					</form>
+				  </div>
+				  <div class="cta"><a href="forgotpassword.php">Forgot your password?</a><hr>
+					New User?<br>
+				  <a href="register.php">
+				   <input type="submit" value="Click Here to Register">
+				  </a></div>
 				</div>
 			</div>
+			<script>
+				$('.toggle').click(function(){
+				  // Switches the Icon
+				  $(this).children('i').toggleClass('fa-pencil');
+				  // Switches the forms  
+				  $('.form').animate({
+					height: "toggle",
+					'padding-top': 'toggle',
+					'padding-bottom': 'toggle',
+					opacity: "toggle"
+				  }, "slow");
+				});
+			</script>
 		</div>
+<!-- //login -->
+		</div>
+		<div class="clearfix"></div>
 	</div>
-</div>
-
+<!-- //banner -->
 <?php
-	include './footer.php';
+include("footer.php");
 ?>
+<script>
+function validateform()
+{
+	/* #######start 1######### */
+	var emailpattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/; //For email id	
+	var alphanumericExp = /^[a-zA-Z0-9]+$/;//Variable to validate only alphanumerics
+		      
+	$("span").html("");
+	var i=0;
+	/* ########end 1######## */
+	
+	if(!document.getElementById("emailid").value.match(emailpattern))
+	{
+		document.getElementById("idemailid").innerHTML ="Entered email id is not valid....";	
+		i=1;		
+	}
+	if(document.getElementById("emailid").value == "")
+	{
+		document.getElementById("idemailid").innerHTML ="Email ID should not be empty....";	
+		i=1;		
+	}
+	if(document.getElementById("password").value.length<3)
+	{
+		document.getElementById("idpassword").innerHTML ="Password should contain more than 3 character..";	
+		i=1;		
+	}
+	if(document.getElementById("password").value == "")
+	{
+		document.getElementById("idpassword").innerHTML ="Password should not be empty....";	
+		i=1;		
+	}
+	/* #######start 2######### */
+	if(i==0)
+	{
+		return true;
+	}
+	else
+	{
+	return false;
+	}
+	/* #######end 2######### */
+}
+</script>

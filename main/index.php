@@ -1,119 +1,632 @@
 <?php
-    include './header.php';
-    require_once './src/Database.php';
-
-    $db = Database::getInstance();
-
-    $auctions = [];
-
-    if(isset($_POST['search'])){
-        $categorie = $_POST['category'];
-        $subCategorie = $_POST['subCategory'];
-        $location = $_POST['location'];
-        $keywords = $_POST['keywords'];
-
-        $sql = "SELECT * FROM auction WHERE category = '$categorie' or sub_category = '$subCategorie' or location = '$location' or title LIKE '%$keywords%'";
-
-        $res = $db->query($sql);
-
-        while($row = $res->fetch_object()){
-            $auctions[] = $row;
-        }
-    } else {
-        $sql = "SELECT * FROM auction ORDER BY id DESC";
-        $res = $db->query($sql);
-
-        while($row = $res->fetch_object()){
-            $auctions[] = $row;
-        }
-    }
-
-    $categories = [];
-    $sql = "SELECT * FROM category";
-    $res = $db->query($sql);
-
-    while($row = $res->fetch_object()){
-        $categories[] = $row;
-    }
-
-    $sub_category = [];
-    $sql = "SELECT * FROM sub_category";
-    $res = $db->query($sql);
-
-    while($row = $res->fetch_object()){
-        $sub_categories[] = $row;
-    }
-
-    $locations = [];
-    $sql = "SELECT * FROM location";
-    $res = $db->query($sql);
-
-    while($row = $res->fetch_object()){
-        $locations[] = $row;
-    }
-
-    
+include("header.php");
 ?>
-    <div class="container">
-        <div class="card my-3">
-            <div class="card-body">
-                <form action="<?php echo $_SERVER['PHP_SELF']?>" method="POST">
+<script>
+function countdowntimer(id, time)
+{
+		// Set the date we're counting down to
+		var countDownDate = new Date(time).getTime();
+
+		// Update the count down every 1 second
+		var x = setInterval(function() {
+
+		// Get todays date and time
+		var now = new Date().getTime();
+		
+		// Find the distance between now an the count down date
+		var distance = countDownDate - now;
+		
+		// Time calculations for days, hours, minutes and seconds
+		var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+		var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+		var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+		var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+		
+		// Output the result in an element with id="demo"
+		document.getElementById("countdowntime"+id).innerHTML = "<b  style='color: red;'>Time Remaining</b> <br><b>" + days + "Days " + hours + "hrs " + minutes + "min " + seconds + "sec</b>";
+		
+		// If the count down is over, write some text 
+		if (distance < 0) {
+			clearInterval(x);
+			document.getElementById("countdowntime"+id).innerHTML = "<center><b  style='color: red;'>EXPIRED</b></center>";
+		}
+	}, 1000);
+	
+}
+</script> 
+
+<hr>		
+            <!-- Latest Auctions start -->
+            <div class="product-area pb-95">
+                <div class="container-fluid">
                     <div class="row">
-                        <div class="col-lg-4 col-md-4 col-sm-12 my-2">
-                            <select id="inputState" name="category" class="form-control form-control-sm">
-                                <option value="none" selected>Choose category...</option>
-                                <?php foreach($categories as $c):?>
-                                <option value="<?php echo $c->id?>"><?php echo $c->name?></option>
-                                <?php endforeach?>
-                            </select>
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="section-title-3">
+                                        <h2>Latest Auctions</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="tab-content">
+                                        <div id="for-men" class="tab-pane active show" role="tabpanel">
+                                            <div class="row">
+                                                <div class="product-active-3 owl-carousel">
+<?php
+$i=0;
+			$sqlproduct = "select product.*,category.category_name from product LEFT JOIN category on product.category_id=category.category_id WHERE product.status='Active' AND product.customer_id!='0' AND product.customer_id!='0' AND start_date_time<='$dttim' order by product.product_id DESC limit 0,4";
+			$qsqlproduct = mysqli_query($con,$sqlproduct);
+			while($rsproduct = mysqli_fetch_array($qsqlproduct))
+			{
+				$i++;
+				$arrproimg = unserialize($rsproduct['product_image']);
+				if($arrproimg[0] == "")
+				{
+					$imgname = "images/noimage.gif";
+				}
+				else if (file_exists("imgproduct/".$arrproimg[0])) 
+				{
+					 $imgname = "imgproduct/".$arrproimg[0];
+				} 
+				else 
+				{
+					$imgname = "images/noimage.gif";
+				}
+?>
+<div class="col">
+	<!-- single-product-wrap start -->
+	<div class="single-product-wrap">
+		<div class="product-image box"  style="height:350px;width:100%;">
+			<a href="single.php?productid=<?php echo $rsproduct[0]; ?>">
+				<img class="primary-image" src="<?php echo $imgname; ?>" alt=""  style="width:100%; height:100%">
+				<?php /*<img class="secondary-image" src="<?php echo $imgname; ?>" alt=""> */ ?>
+			</a>
+			<div class="label-product"><?php echo $rsproduct['category_name']; ?></div>
+		</div>
+		<div class="product_desc">
+			<div class="product_desc_info">
+<?php
+/*			
+				<div class="rating-box">
+					<ul class="rating">
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+					</ul>
+				</div>
+*/
+?>				
+				<h4><a class="product_name" href="single.php?productid=<?php echo $rsproduct[0]; ?>"><?php echo $rsproduct['product_name']; ?></a></h4>
+		<div class="manufacturer"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>">Property Code: <?php echo $rsproduct['product_id']; ?></a></div>
+<!-- Timer code starts here -->
+<?php /* <p id="countdowntime<?php echo $rsproduct[0].$i; ?>">abc</p> */ ?>
+<script type="application/javascript">countdowntimer('<?php echo $rsproduct[0].$i; ?>', '<?php echo date("M d, Y H:i:s",strtotime($rsproduct['end_date_time'])); ?>');</script>
+<!-- Timer code ends here -->
+				<div class="price-box">
+					<span class="new-price">Current Bid Amount : ₹<?php 
+					if($rsproduct['ending_bid'] > $rsproduct['starting_bid'])
+					{
+					echo $rsproduct['ending_bid']; 
+					}
+					else
+					{
+					echo $rsproduct['starting_bid'];
+					}
+					?></span>
+					<?php /*<span class="old-price">$250.00</span> */ ?>
+				</div>
+			</div>
+			<div class="add-actions">
+				<ul class="add-actions-link">
+					<li class="add-cart"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>"><i class="ion-android-cart"></i> Click here to BID</a></li>
+				<?php
+				/*
+					<li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="ion-android-open"></i></a></li>
+					<li><a class="links-details" href="single-product.php"><i class="ion-clipboard"></i></a></li>
+					*/
+					?>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- single-product-wrap end -->
+</div>
+			<?php
+			}
+			?>
+												
+												</div>
+                                            </div>
+                                        </div>
+									</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-lg-4 col-md-4 col-sm-12 my-2">
-                            <select id="inputState" name="subCategory" class="form-control form-control-sm">
-                                <option value="none" selected>Choose sub category...</option>
-                                <?php foreach($sub_categories as $sc):?>
-                                <option value="<?php echo $sc->id?>"><?php echo $sc->name?></option>
-                                <?php endforeach?>
-                            </select>
-                        </div>
-                        <div class="col-lg-4 col-md-4 col-sm-12 my-2">
-                            <select id="inputState" name="location" class="form-control form-control-sm">
-                                <option value="none" selected>Choose location...</option>
-                                <?php foreach($locations as $l):?>
-                                <option value="<?php echo $l->id?>"><?php echo $l->name?></option>
-                                <?php endforeach?>
-                            </select>
-                        </div>
-                        <div class="col-lg-10 col-md-10 col-sm-10 my-2">
-                            <input type="text" name="keywords" class="form-control form-control-sm" placeholder="Keywords...">
-                        </div>
-                       
-                        <div class="col-lg-2 col-md-2 col-sm-2 my-2">
-                            <button type="submit" name="search" class="btn btn-primary btn-block btn-sm">Search</button>
-                        </div>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-
-        <div class="row mb-5">
-            <?php foreach($auctions as $auction):?>
-            <div class="col-lg-3 col-md-4 col-sm-12">
-                <div class="card my-2">
-                    <img src="./upload/<?php echo $auction->image_1?>" class="card-img-top" alt="image">
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="./details.php?id=<?php echo $auction->id?>"><?php echo $auction->title?></a></h5>
-                        <p class="card-text">Rs- <?php echo $auction->price?>/-</p>
-                        <?php $date = new DateTime($auction->date)?>
-                        <p class="card-text float-right"><small class="text-muted">Posted on - <?php echo $date->format('d-m-Y')?></small></p>
                     </div>
                 </div>
             </div>
-            <?php endforeach?>
+            <!-- Latest Auctions end -->
             
-        </div>
-    </div>
 
-   <?php
-        include './footer.php';
-   ?>
+			<hr>
+            <!-- Featured Auctions start -->
+            <div class="product-area pb-95">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="section-title-3">
+                                        <h2>Featured Auctions</h2>
+                                    </div>
+                                </div>
+                            </div>
+							
+                            <div class="row">
+                                <div class="col">
+                                    <div class="tab-content">
+                                        <div id="for-men" class="tab-pane active show" role="tabpanel">
+                                            <div class="row">
+                                                <div class="product-active-3 owl-carousel">
+												
+	<?php
+$i=0;	
+	?><?php
+			$sqlproduct = "select product.*,category.category_name from product LEFT JOIN category on product.category_id=category.category_id WHERE product.status='Active' AND product.customer_id!='0' AND end_date_time<'$dttim' order by product.product_id ASC limit 0,4";
+			$qsqlproduct = mysqli_query($con,$sqlproduct);
+			while($rsproduct = mysqli_fetch_array($qsqlproduct))
+			{
+				$i++;
+				$arrproimg = unserialize($rsproduct['product_image']);
+				if($arrproimg[0] == "")
+				{
+					$imgname = "images/noimage.gif";
+				}
+				else if (file_exists("imgproduct/".$arrproimg[0])) 
+				{
+					 $imgname = "imgproduct/".$arrproimg[0];
+				} 
+				else 
+				{
+					$imgname = "images/noimage.gif";
+				}
+?>
+<div class="col">
+	<!-- single-product-wrap start -->
+	<div class="single-product-wrap">
+		<div class="product-image box"  style="height:350px;width:100%;">
+			<a href="single.php?productid=<?php echo $rsproduct[0]; ?>">
+				<img class="primary-image" src="<?php echo $imgname; ?>" alt=""  style="width:100%; height:100%">
+				<?php /*<img class="secondary-image" src="<?php echo $imgname; ?>" alt=""> */ ?>
+			</a>
+			<div class="label-product"><?php echo $rsproduct['category_name']; ?></div>
+		</div>
+		<div class="product_desc">
+			<div class="product_desc_info">
+<?php
+/*			
+				<div class="rating-box">
+					<ul class="rating">
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+					</ul>
+				</div>
+*/
+?>				
+				<h4><a class="product_name" href="single.php?productid=<?php echo $rsproduct[0]; ?>"><?php echo $rsproduct['product_name']; ?></a></h4>
+		<div class="manufacturer"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>">Product Code: <?php echo $rsproduct['product_id']; ?></a></div>
+<!-- Timer code starts here -->
+<p id="countdowntime<?php echo $rsproduct[0].$i; ?>"></p>
+<script type="application/javascript">countdowntimer('<?php echo $rsproduct[0].$i; ?>', '<?php echo date("M d, Y H:i:s",strtotime($rsproduct['end_date_time'])); ?>');</script>
+<!-- Timer code ends here -->
+				<div class="price-box">
+					<span class="new-price">Current Bid Amount : ₹<?php 
+					if($rsproduct['ending_bid'] > $rsproduct['starting_bid'])
+					{
+					echo $rsproduct['ending_bid']; 
+					}
+					else
+					{
+					echo $rsproduct['starting_bid'];
+					}
+					?></span>
+					<?php /*<span class="old-price">$250.00</span> */ ?>
+				</div>
+			</div>
+			<div class="add-actions">
+				<ul class="add-actions-link">
+					<li class="add-cart"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>"><i class="ion-android-cart"></i> Click here to BID</a></li>
+				<?php
+				/*
+					<li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="ion-android-open"></i></a></li>
+					<li><a class="links-details" href="single-product.php"><i class="ion-clipboard"></i></a></li>
+					*/
+					?>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- single-product-wrap end -->
+</div>
+			<?php
+			}
+			?>
+												
+												</div>
+                                            </div>
+                                        </div>
+									</div>
+                                </div>
+                            </div>
+                        
+							</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Featured Auctions end -->
+            <hr>
+            <!-- Upcoming Auctions start -->
+            <div class="product-area pb-95">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="section-title-3">
+                                        <h2>Upcoming Auctions</h2>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="tab-content">
+                                        <div id="for-men" class="tab-pane active show" role="tabpanel">
+                                            <div class="row">
+                                                <div class="product-active-3 owl-carousel">
+ 												
+<?php
+$i=0;
+			$sqlproduct = "select product.*,category.category_name from product LEFT JOIN category on product.category_id=category.category_id WHERE product.status='Active' AND product.customer_id!='0'  AND start_date_time>'$dttim' order by product.product_id DESC limit 0,4";
+			$qsqlproduct = mysqli_query($con,$sqlproduct);
+			while($rsproduct = mysqli_fetch_array($qsqlproduct))
+			{
+				$i++;
+				$arrproimg = unserialize($rsproduct['product_image']);
+				if($arrproimg[0] == "")
+				{
+					$imgname = "images/noimage.gif";
+				}
+				else if (file_exists("imgproduct/".$arrproimg[0])) 
+				{
+					 $imgname = "imgproduct/".$arrproimg[0];
+				} 
+				else 
+				{
+					$imgname = "images/noimage.gif";
+				}
+?>
+<div class="col">
+	<!-- single-product-wrap start -->
+	<div class="single-product-wrap">
+		<div class="product-image box"  style="height:350px;width:100%;">
+			<a href="single.php?productid=<?php echo $rsproduct[0]; ?>">
+				<img class="primary-image" src="<?php echo $imgname; ?>" alt=""  style="width:100%; height:100%">
+				<?php /*<img class="secondary-image" src="<?php echo $imgname; ?>" alt=""> */ ?>
+			</a>
+			<div class="label-product"><?php echo $rsproduct['category_name']; ?></div>
+		</div>
+		<div class="product_desc">
+			<div class="product_desc_info">
+<?php
+/*			
+				<div class="rating-box">
+					<ul class="rating">
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+					</ul>
+				</div>
+*/
+?>				
+				<h4><a class="product_name" href="single.php?productid=<?php echo $rsproduct[0]; ?>"><?php echo $rsproduct['product_name']; ?></a></h4>
+		<div class="manufacturer"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>">Product Code: <?php echo $rsproduct['product_id']; ?></a></div>
+<!-- Timer code starts here -->
+<p id="countdowntime<?php echo $rsproduct[0].$i; ?>"></p>
+<script type="application/javascript">countdowntimer('<?php echo $rsproduct[0].$i; ?>', '<?php echo date("M d, Y H:i:s",strtotime($rsproduct['end_date_time'])); ?>');</script>
+<!-- Timer code ends here -->
+				<div class="price-box">
+					<span class="new-price">Current Bid Amount : ₹<?php 
+					if($rsproduct['ending_bid'] > $rsproduct['starting_bid'])
+					{
+					echo $rsproduct['ending_bid']; 
+					}
+					else
+					{
+					echo $rsproduct['starting_bid'];
+					}
+					?></span>
+					<?php /*<span class="old-price">$250.00</span> */ ?>
+				</div>
+			</div>
+			<div class="add-actions">
+				<ul class="add-actions-link">
+					<li class="add-cart"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>"><i class="ion-android-cart"></i> Click here to BID</a></li>
+				<?php
+					/*
+					<li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="ion-android-open"></i></a></li>
+					<li><a class="links-details" href="single-product.php"><i class="ion-clipboard"></i></a></li>
+					*/
+				?>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- single-product-wrap end -->
+</div>
+			<?php
+			}
+			?>
+												</div>
+                                            </div>
+                                        </div>
+									</div>
+                                </div>
+                            </div>
+                        
+						</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Upcoming Auctions end -->
+            <hr>
+            <!-- Closing Auctions start -->
+            <div class="product-area pb-95">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="section-title-3">
+                                        <h2>Closing Auctions</h2>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="tab-content">
+                                        <div id="for-men" class="tab-pane active show" role="tabpanel">
+                                            <div class="row">
+                                                <div class="product-active-3 owl-carousel">
+												
+	<?php
+$i=0;	
+	?><?php
+			$sqlproduct = "select product.*,category.category_name from product LEFT JOIN category on product.category_id=category.category_id WHERE product.status='Active' AND product.customer_id!='0'   AND product.end_date_time>'$dt $tim' AND product.end_date_time <'$dt 23:59:59'  order by product.product_id DESC limit 0,4";
+			$qsqlproduct = mysqli_query($con,$sqlproduct);
+			while($rsproduct = mysqli_fetch_array($qsqlproduct))
+			{
+				$i++;
+				$arrproimg = unserialize($rsproduct['product_image']);
+				if($arrproimg[0] == "")
+				{
+					$imgname = "images/noimage.gif";
+				}
+				else if (file_exists("imgproduct/".$arrproimg[0])) 
+				{
+					 $imgname = "imgproduct/".$arrproimg[0];
+				} 
+				else 
+				{
+					$imgname = "images/noimage.gif";
+				}
+?>
+<div class="col">
+	<!-- single-product-wrap start -->
+	<div class="single-product-wrap">
+		<div class="product-image box"  style="height:350px;width:100%;">
+			<a href="single.php?productid=<?php echo $rsproduct[0]; ?>">
+				<img class="primary-image" src="<?php echo $imgname; ?>" alt=""  style="width:100%; height:100%">
+				<?php /*<img class="secondary-image" src="<?php echo $imgname; ?>" alt=""> */ ?>
+			</a>
+			<div class="label-product"><?php echo $rsproduct['category_name']; ?></div>
+		</div>
+		<div class="product_desc">
+			<div class="product_desc_info">
+<?php
+/*			
+				<div class="rating-box">
+					<ul class="rating">
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+					</ul>
+				</div>
+*/
+?>				
+				<h4><a class="product_name" href="single.php?productid=<?php echo $rsproduct[0]; ?>"><?php echo $rsproduct['product_name']; ?></a></h4>
+		<div class="manufacturer"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>">Product Code: <?php echo $rsproduct['product_id']; ?></a></div>
+<!-- Timer code starts here -->
+<p id="countdowntime<?php echo $rsproduct[0].$i; ?>"></p>
+<script type="application/javascript">countdowntimer('<?php echo $rsproduct[0].$i; ?>', '<?php echo date("M d, Y H:i:s",strtotime($rsproduct['end_date_time'])); ?>');</script>
+<!-- Timer code ends here -->
+				<div class="price-box">
+					<span class="new-price">Current Bid Amount : ₹<?php 
+					if($rsproduct['ending_bid'] > $rsproduct['starting_bid'])
+					{
+					echo $rsproduct['ending_bid']; 
+					}
+					else
+					{
+					echo $rsproduct['starting_bid'];
+					}
+					?></span>
+					<?php /*<span class="old-price">$250.00</span> */ ?>
+				</div>
+			</div>
+			<div class="add-actions">
+				<ul class="add-actions-link">
+					<li class="add-cart"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>"><i class="ion-android-cart"></i> Click here to BID</a></li>
+				<?php
+				/*
+					<li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="ion-android-open"></i></a></li>
+					<li><a class="links-details" href="single-product.php"><i class="ion-clipboard"></i></a></li>
+					*/
+					?>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- single-product-wrap end -->
+</div>
+			<?php
+			}
+			?>
+												
+												</div>
+                                            </div>
+                                        </div>
+									</div>
+                                </div>
+                            </div>
+                        
+					   </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Closing Auctions end -->
+            <hr>
+            <!-- Closed Auctions start -->
+            <div class="product-area pb-95">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="section-title-3">
+                                        <h2>Closed Auctions</h2>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="tab-content">
+                                        <div id="for-men" class="tab-pane active show" role="tabpanel">
+                                            <div class="row">
+                                                <div class="product-active-3 owl-carousel">
+												
+	<?php
+$i=0;	
+	?><?php
+			$sqlproduct = "select product.*,category.category_name from product LEFT JOIN category on product.category_id=category.category_id WHERE product.status='Active'  AND product.customer_id!='0' AND end_date_time<'$dt $tim' order by product.product_id DESC limit 0,4";
+			$qsqlproduct = mysqli_query($con,$sqlproduct);
+			while($rsproduct = mysqli_fetch_array($qsqlproduct))
+			{
+				$i++;
+				$arrproimg = unserialize($rsproduct['product_image']);
+				if($arrproimg[0] == "")
+				{
+					$imgname = "images/noimage.gif";
+				}
+				else if (file_exists("imgproduct/".$arrproimg[0])) 
+				{
+					 $imgname = "imgproduct/".$arrproimg[0];
+				} 
+				else 
+				{
+					$imgname = "images/noimage.gif";
+				}
+?>
+<div class="col">
+	<!-- single-product-wrap start -->
+	<div class="single-product-wrap">
+		<div class="product-image box"  style="height:350px;width:100%;">
+			<a href="single.php?productid=<?php echo $rsproduct[0]; ?>">
+				<img class="primary-image" src="<?php echo $imgname; ?>" alt=""  style="width:100%; height:100%">
+				<?php /*<img class="secondary-image" src="<?php echo $imgname; ?>" alt=""> */ ?>
+			</a>
+			<div class="label-product"><?php echo $rsproduct['category_name']; ?></div>
+		</div>
+		<div class="product_desc">
+			<div class="product_desc_info">
+<?php
+/*			
+				<div class="rating-box">
+					<ul class="rating">
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+						<li class="no-star"><i class="fa fa-star"></i></li>
+					</ul>
+				</div>
+*/
+?>				
+				<h4><a class="product_name" href="single.php?productid=<?php echo $rsproduct[0]; ?>"><?php echo $rsproduct['product_name']; ?></a></h4>
+		<div class="manufacturer"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>">Product Code: <?php echo $rsproduct['product_id']; ?></a></div>
+<!-- Timer code starts here -->
+<p id="countdowntime<?php echo $rsproduct[0].$i; ?>"></p>
+<script type="application/javascript">countdowntimer('<?php echo $rsproduct[0].$i; ?>', '<?php echo date("M d, Y H:i:s",strtotime($rsproduct['end_date_time'])); ?>');</script>
+<!-- Timer code ends here -->
+				<div class="price-box">
+					<span class="new-price">Current Bid Amount : ₹<?php 
+					if($rsproduct['ending_bid'] > $rsproduct['starting_bid'])
+					{
+					echo $rsproduct['ending_bid']; 
+					}
+					else
+					{
+					echo $rsproduct['starting_bid'];
+					}
+					?></span>
+					<?php /*<span class="old-price">$250.00</span> */ ?>
+				</div>
+			</div>
+			<div class="add-actions">
+				<ul class="add-actions-link">
+					<li class="add-cart"><a href="single.php?productid=<?php echo $rsproduct[0]; ?>"><i class="ion-android-cart"></i> Click here to BID</a></li>
+				<?php
+				/*
+					<li><a class="quick-view" data-toggle="modal" data-target="#exampleModalCenter" href="#"><i class="ion-android-open"></i></a></li>
+					<li><a class="links-details" href="single-product.php"><i class="ion-clipboard"></i></a></li>
+					*/
+					?>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- single-product-wrap end -->
+</div>
+			<?php
+			}
+			?>
+												
+												</div>
+                                            </div>
+                                        </div>
+									</div>
+                                </div>
+                            </div>
+                        
+					   </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Closed Auctions end -->	   
+
+<?php
+include("footer.php");
+?>
